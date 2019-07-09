@@ -1,0 +1,68 @@
+# Cumulative prospect theory model for Gambles risk propensity data (JOINT)
+# parameters of interest: lambda = loss aversion, phi = consistency
+# data to feed in: decision, probsA, probsB, valsA, valsB, nsubj, ncond, nprob, nchoices
+
+# Data:
+# probsA[i, j, m, 1]: probabilities of Gamble A
+# probsB[i, j, m, 2]: probabilities of Gamble B
+# valsA[i, j, m, 1]: values of Gamble A
+# valsB[i, j, m, 2]: values of Gamble B
+# decision[i, j, m]: 1 if Gamble B chosen, 0 if Gamble A chosen
+
+
+model{
+
+	for (i in 1:nsubj){
+	
+		# Priors
+		#loglambda[i] ~ dnorm(0, 1/9)
+		#lambda[i] <- exp(loglambda[i])
+		#lambda[i] ~ dunif(0, 10)
+		lambda[i] ~ dgamma(2, 1)T(0, 5)
+		gamma[i] ~ dunif(0, 1)
+		delta[i] ~ dunif(0, 1)
+		alpha[i] ~ dbeta(6, 2)
+		#beta[i] <- alpha[i]
+		phi[i] ~ dgamma(2, 1)T(0, 5)
+	
+		for (m in 1:ncond){
+			
+			# Joint Priors
+			#alpha[i, m] ~ dunif(0, 1)
+			#phi[i, m] ~ dunif(0, 10)
+			#phi[i, m] ~ dgamma(2, 1)T(0, 5)
+			
+			# Use gamma for gain trials, delta for loss trials
+			c[i, m] <- equals(m, 1)*gamma[i] + equals(m, 2)*delta[i]
+						
+			for (j in 1:nprob){
+			
+				for (k in 1:nchoices){	# k=1 are gains, k=2 are losses
+				
+					# Subjective value of payoff k=1 and payoff k=2
+					nuA[i, j, m, k] <- equals(m, 1)*(pow(valsA[i, j, m, k], alpha[i])) + equals(m, 2)*(-lambda[i]*pow(-valsA[i, j, m, k], alpha[i]))
+					nuB[i, j, m, k] <- equals(m, 1)*(pow(valsB[i, j, m, k], alpha[i])) + equals(m, 2)*(-lambda[i]*pow(-valsB[i, j, m, k], alpha[i]))
+				
+					# Weighting function for objective probability k=1 and probability k=2
+					piA[i, j, m, k] <- pow(probsA[i, j, m, k], c[i, m])/max(.001, min(.999, pow(pow(probsA[i, j, m, k], c[i, m]) + pow(1 - probsA[i, j, m, k], c[i, m]), (1/c[i,m]))))
+					piB[i, j, m, k] <- pow(probsB[i, j, m, k], c[i, m])/max(.001, min(.999, pow(pow(probsB[i, j, m, k], c[i, m]) + pow(1 - probsB[i, j, m, k], c[i, m]), (1/c[i,m]))))
+				
+				}
+				
+				# Subjective value of Gambla A
+				subvalA[i, j, m] <- piA[i, j, m, 1]*nuA[i, j, m, 1] + piA[i, j, m, 2]*nuA[i, j, m, 2]
+				
+				# Subjective value of Gambla B
+				subvalB[i, j, m] <- piB[i, j, m, 1]*nuB[i, j, m, 1] + piB[i, j, m, 2]*nuB[i, j, m, 2]
+				
+				# Probability of choosing Gamble A (better) over Gamble B
+				theta[i, j, m] <- max(.001, min(.999, (1/(1 + exp(phi[i]*(subvalB[i, j, m] - subvalA[i, j, m]))))))
+				
+				# Decision (1 if Gambla A chosen, 0 if Gamble B chosen)
+				decision[i, j, m] ~ dbern(theta[i, j, m])
+				predy[i, j, m] ~ dbern(theta[i, j, m])
+				
+			}
+		}
+	}
+}

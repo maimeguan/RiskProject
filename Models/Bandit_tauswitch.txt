@@ -1,0 +1,64 @@
+# tau-switch model for Bandit risk propensity data
+# parameters of interest: tau = trial where exploration switches to exploitation
+# data to feed in: decision, situation (5), ntrial, nsubj, ncond, nprob
+
+model{
+
+	for (i in 1:nsubj){
+	
+		for (m in 1:ncond){
+		
+			# Prior for alpha (accuracy of execution)
+			alpha[i, m] ~ dunif(.5, 1)
+			
+			# Prior for tau (location of trial where switch happens)
+			kernel[i, m, 1] <- 0
+			kernel[i, m, 2] <- 0
+			for (k in 3:ntrial[m]){
+				kernel[i, m, k] <- 1/(ntrial[m] - 2)
+			}
+			tau[i, m] ~ dcat(kernel[i, m, 1:ntrial[m]])
+			
+			for (j in 1:nprob){
+				
+				for (k in 1:ntrial[m]){
+				
+					### situation -- 1: same, 2: left better, 3: right better, 4: left explore, 5: right explore
+					### state -- 1: explore, 2: exploit
+					### tmpTheta[subj, prob, cond, trial, situation, state, left/right]
+				
+					# 1: SAME: left = right = 0.5, identical regardless of state
+					tmpTheta[i, j, m, k, 1, 1] <- 0.5
+					tmpTheta[i, j, m, k, 1, 2] <- 0.5
+				
+					# 2: LEFT BETTER: identical regardless of state
+					tmpTheta[i, j, m, k, 2, 1] <- alpha[i, m]
+					tmpTheta[i, j, m, k, 2, 2] <- alpha[i, m]
+					
+					# 3: RIGHT BETTER: identical regardless of state
+					tmpTheta[i, j, m, k, 3, 1] <- 1 - alpha[i, m]
+					tmpTheta[i, j, m, k, 3, 2] <- 1 - alpha[i, m]
+					
+					# 4: LEFT EXPLORE:
+					tmpTheta[i, j, m, k, 4, 1] <- alpha[i, m]
+					tmpTheta[i, j, m, k, 4, 2] <- 1 - alpha[i, m]
+					
+					# 5: RIGHT EXPLORE:
+					tmpTheta[i, j, m, k, 5, 1] <- 1 - alpha[i, m]
+					tmpTheta[i, j, m, k, 5, 2] <- alpha[i, m]
+
+					# What state we are in (z = 1 is explore, 2 is exploit)
+					z[i, j, m, k] <- step(k - tau[i, m]) + 1
+				
+					### theta to use for making a decision on current trial:
+					theta[i, j, m, k] <- tmpTheta[i, j, m, k, situation[i, j, m, k], z[i, j, m, k]]
+				
+					# Decision (use decLEFT, where 1 is left chosen, 0 if right chosen):
+					decision[i, j, m, k] ~ dbern(theta[i, j, m, k])
+				
+				}
+			}
+		}
+		
+	}
+}

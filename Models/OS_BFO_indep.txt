@@ -1,0 +1,105 @@
+# bias-from-optimal threshold model for Optimal Stopping risk propensity data (INDEPENDENT)
+# parameters of interest: alpha = probability of execution, beta = how far above/below optimal, gamma = how quickly threshold drops relative to optimal
+# data to feed in: stim4, stim8, decision4, decision8, opt4, opt8, biggest4, biggest8, t4, t8
+# nsubj, nprob, nstim4, nstim8
+
+
+model{
+
+	# 4-point problems
+	for (i in 1:nsubj){
+		
+		# Loop through neutral and plentiful conditions within 4-point problems
+		for (m in 1:2){
+		
+			# Priors for alpha, beta, and gamma in 4-point problems
+	        alpha4[i, m] ~ dbeta(1, 1)		# accuracy of execution parameter for 4-point problems
+			beta4[i, m] ~ dnorm(0, 1)		# bias parameter: how far above or below optimal for 4-point problems
+			gamma4[i, m] ~ dnorm(0, 1)		# bias parameter: how quickly does threshold drop relative to optimal for 4-point problems
+		
+			# Participant's thresholds defined as deviations from the optimal threshold
+			for (k in 1:nstim4-1){
+				mu4[i, m, k] <- probit(opt4[m, k]/100)
+				mu4prime[i, m, k] <- mu4[i, m, k] + beta4[i, m] + gamma4[i, m]*t4[k]
+				tau4[i, m, k] <- phi(mu4prime[i, m, k])*100
+			}
+			tau4[i, m, 4] <- 0
+		
+			# Checks if current stimulus is maximal and above threshold
+			for (j in 1:nprob){
+				for (k in 1:nstim4){
+						above4[i, j, m, k] <- step(stim4[i, j, m, k] - tau4[i, m, k])
+				}
+			
+				# Threshold choice model, pick first stimulus that is BOTH the highest so far AND above their threshold
+				intmp[i,j,m,1] <- above4[i,j,m,1]
+				intmp[i,j,m,2] <- 2*above4[i,j,m,2]*biggest4[i,j,m,2]*equals(intmp[i,j,m,1],0)
+				intmp[i,j,m,3] <- 3*above4[i,j,m,3]*biggest4[i,j,m,3]*equals(intmp[i,j,m,1],0)*equals(intmp[i,j,m,2],0)
+				ind4[i,j,m] <- sum(intmp[i,j,m,1:3])+ 4*equals(sum(intmp[i,j,m,1:3]),0)
+			
+				# Matrix of decision probabilities
+				for (k in 1:nstim4){
+					prob4[i,j,m,k] <- equals(ind4[i,j,m],k)*alpha4[i,m] + (1-equals(ind4[i,j,m],k))*(1-alpha4[i,m])/3
+				}
+			
+				# Decisions are generated probabilistically
+				predy4[i,j,m] ~ dcat(prob4[i,j,m,1:nstim4])
+				decision4[i,j,m] ~ dcat(prob4[i,j,m,1:nstim4])
+				
+			}
+		}
+	}
+	
+	# 8-point problems
+	for (i in 1:nsubj){
+	
+		# Loop through neutral and plentiful conditions within 8-point problems
+		for (m in 1:2){
+		
+			# Priors for alpha, beta, and gamma in 8-point problems
+			alpha8[i, m] ~ dbeta(1, 1)		# accuracy of execution parameter for 8-point problems
+			beta8[i, m] ~ dnorm(0, 1)		# bias parameter: how far above or below optimal for 8-point problems
+			gamma8[i, m] ~ dnorm(0, 1)		# bias parameter: how quickly does threshold drop relative to optimal for 8-point problems
+		
+			# Participant's thresholds defined as deviations from the optimal threshold
+			for (k in 1:nstim8-1){
+				mu8[i, m, k] <- probit(opt8[m, k]/100)
+				mu8prime[i, m, k] <- mu8[i, m, k] + beta8[i, m] + gamma8[i, m]*t8[k]
+				tau8[i, m, k] <- phi(mu8prime[i, m, k])*100
+			}
+			tau8[i, m, 8] <- 0
+		
+			# Checks if current stimulus is maximal and above threshold
+			for (j in 1:nprob){
+				for (k in 1:nstim8){
+						above8[i,j,m,k] <- step(stim8[i,j,m,k]-tau8[i,m,k])
+				}
+			
+				# Threshold choice model, pick first stimulus that is BOTH the highest so far AND above their threshold
+				indtmp[i,j,m,1] <- above8[i,j,m,1]
+				indtmp[i,j,m,2] <- 2*above8[i,j,m,2]*biggest8[i,j,m,2]*equals(indtmp[i,j,m,1],0)
+				indtmp[i,j,m,3] <- 3*above8[i,j,m,3]*biggest8[i,j,m,3]*equals(indtmp[i,j,m,1],0)*equals(indtmp[i,j,m,2],0)
+				indtmp[i,j,m,4] <- 4*above8[i,j,m,4]*biggest8[i,j,m,4]*equals(indtmp[i,j,m,1],0)*equals(indtmp[i,j,m,2],0)*equals(indtmp[i,j,m,3],0)
+				indtmp[i,j,m,5] <- 5*above8[i,j,m,5]*biggest8[i,j,m,5]*equals(indtmp[i,j,m,1],0)*equals(indtmp[i,j,m,2],0)*equals(indtmp[i,j,m,3],0)
+									*equals(indtmp[i,j,m,4],0)
+				indtmp[i,j,m,6] <- 6*above8[i,j,m,6]*biggest8[i,j,m,6]*equals(indtmp[i,j,m,1],0)*equals(indtmp[i,j,m,2],0)*equals(indtmp[i,j,m,3],0)
+									*equals(indtmp[i,j,m,4],0)*equals(indtmp[i,j,m,5],0)
+				indtmp[i,j,m,7] <- 7*above8[i,j,m,7]*biggest8[i,j,m,7]*equals(indtmp[i,j,m,1],0)*equals(indtmp[i,j,m,2],0)*equals(indtmp[i,j,m,3],0)
+									*equals(indtmp[i,j,m,4],0)*equals(indtmp[i,j,m,5],0)*equals(indtmp[i,j,m,6],0)												
+				ind8[i,j,m] <- sum(indtmp[i,j,m,1:7])+ 8*equals(sum(indtmp[i,j,m,1:7]),0)
+			
+				# Matrix of decision probabilities
+				for (k in 1:nstim8){
+					prob8[i,j,m,k] <- equals(ind8[i,j,m],k)*alpha8[i,m] + (1-equals(ind8[i,j,m],k))*(1-alpha8[i,m])/7			# matrix of decisions
+				}
+			
+				# Decisions are generated probabilistically
+				predy8[i,j,m] ~ dcat(prob8[i,j,m,1:nstim8])
+				decision8[i,j,m] ~ dcat(prob8[i,j,m,1:nstim8])
+				
+			}
+		}
+	}
+	
+
+}

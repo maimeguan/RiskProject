@@ -1,0 +1,41 @@
+# Extended WSLS model for Bandit risk propensity data
+# parameters of interest: gammaWin = win-stay probability, gammaLose = lose-shift probability
+# data to feed in: decision (decWSLS), reward, ntrial, nsubj, ncond, nprob
+
+model{
+
+	for (i in 1:nsubj){
+	
+		for (m in 1:ncond){
+		
+			# Priors for gammaWin and gammaLose
+			gammaWin[i, m] ~ dunif(0, 1)
+			gammaLose[i, m] ~ dunif(0, 1)
+			
+			for (j in 1:nprob){
+								
+				theta[i, j, m, 1] <- 0.5
+				predy[i, j, m, 1] ~ dbern(.5)
+				
+				for (k in 2:ntrial[m]){
+				
+				# reward on previous decision is 0 for fail, 1 for success
+				# Probability of STAY on current trial is:
+				theta[i, j, m, k] <- gammaWin[i, m]*equals(reward[i, j, m, k-1], 1) + (1-gammaLose[i, m])*equals(reward[i, j, m, k-1], 0)
+
+				# Decision made on current trial is: (use decWSLS, where 1 is stay, 2 is shift -- but changed to 1 stay 0 shift)
+				decision[i, j, m, k] ~ dbern(theta[i, j, m, k])
+				
+				predy[i, j, m, k] ~ dbern(theta[i, j, m, k])
+				
+				}
+				
+				# set blanks in theta and predy to 0
+				for (k in (ntrial[m]+1):16) {
+      				theta[i, j, m, k] <- 0
+      				predy[i, j, m, k] <- 0
+   				}
+			}
+		}
+	}
+}

@@ -1,0 +1,45 @@
+# 2-parameter BART model for BART risk propensity data
+# parameters of interest: gamma = risk propensity, beta = consistency
+# data to feed in: decision, options, nsubj, ncond, nprob
+
+model{
+	
+	for (i in 1:nsubj){
+	
+		for (m in 1:ncond){
+		
+		# Priors for gamma and beta
+		gamma[i, m] ~ dunif(0, 10)
+		beta[i, m] ~ dunif(0, 10)
+		
+		# Optimal number of pumps for each participant: omega 
+		# Probability of balloon bursting: p
+		omega[i, m] <- -gamma[i, m]/log(1-p[m])
+		
+			for (j in 1:nprob){
+				
+				# Options is the number of pumps on each problem before a burst/bank
+				for (k in 1:options[i, j, m]){
+					
+					# Probability of pumping on each trial is theta
+					thetaPrime[i, j, m, k] <- 1/(1+max(-15,min(15,exp(beta[i, m]*(k-omega[i, m])))))
+
+					# Censoring for when the trial ends in a burst
+					theta[i, j, m, k] <- max(0.0001, min(.9999, step((burstTrial[i, j, m] - 1) - k) * thetaPrime[i, j, m, k]))
+
+					# decision (1 is pump, 0 is bank)
+					decision[i, j, m, k] ~ dbern(theta[i, j, m, k])
+					predy[i, j, m, k] ~ dbern(theta[i, j, m, k])
+		
+				}
+				
+				# set blanks in thetaPrime, theta, and predy to 0
+				for (k in (options[i, j, m]+1):maxOptions) {
+      				theta[i, j, m, k] <- 0
+      				thetaPrime[i, j, m, k] <- 0
+      				predy[i, j, m, k] <- 0
+   				}
+			}
+		}
+	}
+}
