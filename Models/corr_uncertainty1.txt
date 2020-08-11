@@ -1,0 +1,38 @@
+# Correlation with uncertainty in measurement model for pairwise comparisons of between-task risk parameters
+# parameter of interest: pearson's correlation coefficient r
+# data to feed in: nsubj, x (posterior means of params), and lambdaerror (posterior precisions of params)
+
+model {
+	
+	# Data
+	for (i in 1:nsubj){		# n is number of data points (how many measures of each parameter do we have? nsubjects)
+		y[i, 1:2] ~ dmnorm(mu[], precision[ , ])
+		
+		for (j in 1:2){
+			x[i, j] ~ dnorm(y[i, j], lambdaerror[i, j])
+		
+		}
+		
+	}
+
+	# Priors
+	r ~ dunif(-1, 1)
+	mu[1] ~ dunif(0, 1)
+	mu[2] ~ dunif(0, 1)
+	lambda[1] ~ dgamma(.001, .001)
+	lambda[2] ~ dgamma(.001, .001)
+	
+	# Reparameterization
+	sigma[1] <- 1/sqrt(lambda[1])
+	sigma[2] <- 1/sqrt(lambda[2])
+	
+	bigSigma[1, 1] <- 1/lambda[1]
+	bigSigma[2, 2] <- 1/lambda[2]
+	bigSigma[1, 2] <- r*sigma[1]*sigma[2]
+	bigSigma[2, 1] <- r*sigma[1]*sigma[2]
+	
+	precision[1:2, 1:2] <- inverse(bigSigma[1:2, 1:2])
+
+
+
+}
