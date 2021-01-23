@@ -1,3 +1,16 @@
+UPDATES Jan-23-2021 (mdlee@uci.edu)
+
+The bandit, optimal stopping, and BART data have been cleaned a little. They now report only the 56 participants used in the paper, and do so consistently.
+
+In addition, order information has been added. (The remainder of the data is ordered by the unique problems, not by the order in which subjects completed them),
+
+order: nsubj x nprob x ncond, where the (i,j,k) is the problem number that the ith subject encountered as their jth problem in the kth condition
+
+The new files are banditGuanEtAl2010, optimalStoppingGuanEtAl2021, and BARTGUanEtAl2021, each with a strutured variable "d"
+
+
+----- ORIGINAL README --------
+
 This folder contains the participant data for each of the 4 risk propensity tasks.
 Each task has its own data structure, with the name of the task.
 
