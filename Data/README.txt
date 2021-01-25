@@ -1,10 +1,16 @@
+UPDATES Jan-25-2021 (mdlee@uci.edu)
+
+Added a file decisionTasksGeneral with a structured variable d, that gives the order in which participants did the four decision-making tasks (optimal stopping, BART, bandit, gambling).
+
+ntaskOrder: nsubj x ntasks, with the (i, j) entry is which task the ith participant did as their jth task (1 = optimal stopping, 2 = BART, 3 = bandit, 4 = gambling)
+
 UPDATES Jan-23-2021 (mdlee@uci.edu)
 
 The bandit, optimal stopping, and BART data have been cleaned a little. They now report only the 56 participants used in the paper, and do so consistently.
 
 In addition, order information has been added. (The remainder of the data is ordered by the unique problems, not by the order in which subjects completed them),
 
-order: nsubj x nprob x ncond, where the (i,j,k) is the problem number that the ith subject encountered as their jth problem in the kth condition
+order: nsubj x nprob x ncond, where the (i,j,k) entry is the problem number that the ith subject encountered as their jth problem in the kth condition
 
 The new files are banditGuanEtAl2010, optimalStoppingGuanEtAl2021, and BARTGUanEtAl2021, each with a strutured variable "d"
 
