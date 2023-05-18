@@ -3,6 +3,12 @@
 
 % -joachim vandekerckhove
 
+
+%% Install Trinity if needed
+% !git clone https://github.com/joachimvandekerckhove/trinity.git
+% addpath trinity
+% trinity install
+
 %%
 % Select a model
 if ~exist('lvm', 'var')
@@ -12,12 +18,12 @@ end
 %% Script controls
 filename  = sprintf('clvm_%02i.mat', lvm);
 force_run = false;
-do_save   = false;
+do_save   = true;
 
 %% Only rerun if necessary or forced
 if ~exist(filename, 'file') || force_run
 
-    modeldef = sprintf('models/clvm_%i', lvm);   % model definition file
+    modeldef = sprintf('models.clvm_%i', lvm);   % model definition file
 
     %%
     % DATA
@@ -148,8 +154,8 @@ if ~exist(filename, 'file') || force_run
         'modules'       ,           'dic', ...
         'nchains'       ,             4 , ...
         'verbosity'     ,             0 , ...
-        'nsamples'      ,         10000 , ...
-        'nburnin'       ,         10000 , ...
+        'nsamples'      ,         100 , ...
+        'nburnin'       ,         100 , ...
         'thin'          ,            10 , ...
         'parallel'      ,             1 , ...
         'workingdir'    ,       ['/tmp/lvm/' filename] , ...
@@ -187,4 +193,4 @@ fprintf('MRH:  %g\n', mrh)
 fprintf('DIC:  %g\n', dic)
 
 
-%list_dic
+list_dic
