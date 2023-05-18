@@ -186,7 +186,7 @@ dic = round(getdic(chains));
 mrh = max(codatable(chains, @gelmanrubin));
 
 if do_save
-    save(sprintf('clvm_%02i_stats.mat', lvm), 'dic', 'mrh', 'modelinfo');
+    save(sprintf('stats/clvm_%02i_stats.mat', lvm), 'dic', 'mrh', 'modelinfo');
 end
 
 fprintf('MRH:  %g\n', mrh)

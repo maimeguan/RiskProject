@@ -6,14 +6,13 @@
 %% Some preallocation
 s = {};
 
-dic = zeros(1, nf);
-mrh = zeros(1, nf);
-
-
 %% Read model statistics files
-dc = dir('stats/clvm*_stats.mat');
+fd = 'stats';
+dc = dir([fd filesep 'clvm*_stats.mat']);
 nf = numel(dc);
 
+dic = zeros(1, nf);
+mrh = zeros(1, nf);
 
 %% Print something to the screen
 fprintf('   Loading results... \n')
@@ -22,7 +21,7 @@ ln = fprintf('|%s| %d/%d  \n', repmat(' ', 1, nf), 0, nf);
 
 %% Loop over model statistics files
 for d = 1:nf
-    s{d} = load(dc(d).name);  % load file
+    s{d} = load([fd filesep dc(d).name]);  % load file
     dic(d) = [s{d}.dic];      % get dic
     mrh(d) = [s{d}.mrh];      % get mrh
 
