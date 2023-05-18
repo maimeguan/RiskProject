@@ -1,4 +1,4 @@
-pu = NaN;
+u = NaN;
 
 %  Risk,Consistency
 w = { ...
