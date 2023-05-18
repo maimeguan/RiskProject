@@ -1,0 +1,3 @@
+[submodule "CLVM/trinity"]
+	path = CLVM/trinity
+	url = https://github.com/joachimvandekerckhove/trinity.git
