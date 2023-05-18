@@ -64,3 +64,5 @@ end
 
 %% Print line
 fprintf(line)
+fprintf('   Note: These values are subject to MCMC error.  Be sure to check convergence!\n')
+fprintf(line)

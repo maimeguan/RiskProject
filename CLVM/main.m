@@ -9,6 +9,9 @@
 % addpath trinity
 % trinity install
 
+fprintf('Cached results:\n')
+list_dic
+
 %%
 % Select a model
 if ~exist('lvm', 'var')
@@ -18,7 +21,7 @@ end
 %% Script controls
 filename  = sprintf('clvm_%02i.mat', lvm);
 force_run = false;
-do_save   = true;
+do_save   = false;
 
 %% Only rerun if necessary or forced
 if ~exist(filename, 'file') || force_run
